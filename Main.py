@@ -56,7 +56,7 @@ while True:
                     bgImage = lbgImages[d4BadGuys].copy()
                     bgRect = bgImage.get_rect()
                     bgRect.left, bgRect.top = [random.randint(1,150) * 2, random.randint(1,150) * 2]
-                    lEnemies.append([bgImage, bgRect, difficulty * random.randint(50, 100)])
+                    lEnemies.append([bgImage, bgRect,  random.randint(50 + (10 * difficulty), 100 + (10 * difficulty))])
             elif event.type == pygame.KEYDOWN:  #KEYDOWN
                 k = event.key
                 apend = False
