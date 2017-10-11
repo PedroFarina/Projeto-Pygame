@@ -3,12 +3,14 @@ import time
 import sys
 import random
 
+#Containers e fontes
 pygame.init()
 pygame.font.init()
 screen = pygame.display.set_mode([400,400])
-
-font = pygame.font.SysFont('Comis Sans MS', 15)
-text = "PRESSIONE [ENTER] PARA INICIAR O JOGO"
+fontGrande = pygame.font.Font("Fontes/FonteGame.ttf", 30)
+fontNormal = pygame.font.SysFont('Comis Sans MS', 15)
+textNormal = "PRESSIONE [ENTER] PARA INICIAR O JOGO"
+textGrande = ""
 #Imagens de background
 lImages = (pygame.image.load("Imagens/bg1.jpg"), pygame.image.load("Imagens/bg2.jpg"), pygame.image.load("Imagens/bg3.jpg"), pygame.image.load("Imagens/bg4.jpg"))
 lRects = []
@@ -30,6 +32,8 @@ MaxEnemies = 3
 #Passo do jogo
 clock = pygame.time.Clock()
 spawnTime = 2000
+#Pontuação
+killed = 0
 
 while True:
     screen.fill([255, 255, 255])
@@ -45,7 +49,6 @@ while True:
             elif eType == pygame.USEREVENT + 1: #Terminar reload
                 reloading = False
                 pygame.time.set_timer(pygame.USEREVENT + 1, 0)
-                print("OK")
             elif eType == pygame.USEREVENT + 2: #Aumentar dificuldade
                 difficulty += 1
                 MaxEnemies = 3 * difficulty
@@ -55,8 +58,13 @@ while True:
                     d4BadGuys = random.randint(0, min(difficulty, len(lbgImages) - 1))
                     bgImage = lbgImages[d4BadGuys].copy()
                     bgRect = bgImage.get_rect()
-                    bgRect.left, bgRect.top = [random.randint(1,150) * 2, random.randint(1,150) * 2]
+                    bgRect.left, bgRect.top = [random.randint(1,150) * 2, random.randint(50,150) * 2]
                     lEnemies.append([bgImage, bgRect,  random.randint(50 + (10 * difficulty), 100 + (10 * difficulty))])
+                    if len(lEnemies) > 4:
+                        textGrande = "DEFEAT!"
+                        lEnemies = []
+                        textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
+                        difficulty = 0
             elif event.type == pygame.KEYDOWN:  #KEYDOWN
                 k = event.key
                 apend = False
@@ -70,7 +78,8 @@ while True:
                 elif k == pygame.K_r:                             #Recarregar arma
                     bullets = 30
                     reloading = True
-                    text = ""
+                    textNormal = ""
+                    textGrande = ""
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
                 if apend:
                     keep.append(k)
@@ -78,16 +87,17 @@ while True:
                 k = event.key
                 if k in keep:
                     keep.remove(k)
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:            #TIRO
                 if event.button == 1:
                     keep.append(pygame.K_LCTRL)
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
-                    keep.remove(pygame.K_LCTRL)
+                    if pygame.K_LCTRL in keep:
+                        keep.remove(pygame.K_LCTRL)
         for keys in keep:
             if keys == pygame.K_LCTRL and not(reloading):
                 if bullets < 10:
-                    text = "Low ammo."
+                    textNormal = "Low ammo."
                 if bullets > 0:
                     bullets -= 1
                     pos = pygame.mouse.get_pos()
@@ -99,9 +109,11 @@ while True:
                             print(vida)
                             if vida <= 0:
                                 lEnemies.remove(bg)
+                                killed += 1
                             bg[2] = vida
                 else:
-                    text = "RELOAD!"
+                    textNormal = ""
+                    textGrande = "RELOAD!"
     else:
         for event in pygame.event.get():
             eType = event.type
@@ -111,10 +123,17 @@ while True:
             elif eType == pygame.KEYDOWN:
                 if event.key == 13:
                     difficulty = 1
-                    text = ""
+                    killed = 0
+                    bullets = 30
+                    textGrande = ""
+                    textNormal = ""
                     pygame.time.set_timer(pygame.USEREVENT + 2, 5000) #Aumentando a dificuldade
                     pygame.time.set_timer(pygame.USEREVENT + 3, spawnTime) #Spawnar inimigo
-    txt = font.render(text, True, (255,255,255))
-    screen.blit(txt, (80, 350))
+    txtNormal = fontNormal.render(textNormal, True, (255,255,255))
+    txtGrande = fontGrande.render(textGrande, True, (255,0,0))
+    txtScore = fontGrande.render("Score: " + str(killed), True, (220,220,0))
+    screen.blit(txtNormal, (80, 350))
+    screen.blit(txtGrande, (100, 200))
+    screen.blit(txtScore, (20, 20))
     clock.tick(8)
     pygame.display.update()
