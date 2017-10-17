@@ -6,27 +6,37 @@ import random
 #Containers e fontes
 pygame.init()
 pygame.font.init()
+pygame.mixer.pre_init()
+pygame.mixer.init()
 screen = pygame.display.set_mode([400,400])
+#Sons
+pygame.mixer.music.load("Sons/theme.mp3")
+pygame.mixer.music.play()
+rSound = pygame.mixer.Sound("Sons/reload.ogg")
+cSound = pygame.mixer.Sound("Sons/clip.ogg")
+fSound = pygame.mixer.Sound("Sons/fire.ogg")
+
 fontGrande = pygame.font.Font("Fontes/FonteGame.ttf", 30)
 fontNormal = pygame.font.SysFont('Comis Sans MS', 15)
 textNormal = "PRESSIONE [ENTER] PARA INICIAR O JOGO"
-textGrande = ""
+textGrande = " "
 #Imagens de background
 lImages = (pygame.image.load("Imagens/bg1.jpg"), pygame.image.load("Imagens/bg2.jpg"), pygame.image.load("Imagens/bg3.jpg"), pygame.image.load("Imagens/bg4.jpg"))
 lRects = []
 rectBackground = lImages[0].get_rect()
 rectBackground.left, rectBackground.top = [0,0]
 #Vilões
-#Imagens de vilões
+ #Imagens de vilões
 lbgImages = (pygame.image.load("Imagens/badguy01.png"),pygame.image.load("Imagens/badguy02.png"), pygame.image.load("Imagens/miniboss.png"), pygame.image.load("Imagens/boss.png"))
 lbgRects = []
-#Vilões ativos
+ #Vilões ativos
 lEnemies = []
 #Variaveis controladoras
 keep = [] #Lista com cada tecla que permanece sendo pressionada
 d4Background = random.randint(0,3)
 bullets = 30
 reloading = False
+highscore = []
 difficulty = 0
 MaxEnemies = 3
 #Passo do jogo
@@ -62,9 +72,12 @@ while True:
                     lEnemies.append([bgImage, bgRect,  random.randint(50 + (10 * difficulty), 100 + (10 * difficulty))])
                     if len(lEnemies) > 4:
                         textGrande = "DEFEAT!"
+                        pygame.time.set_timer(pygame.USEREVENT + 4, 1000)
+                        highscore.append(killed)
                         lEnemies = []
                         textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
                         difficulty = 0
+            
             elif event.type == pygame.KEYDOWN:  #KEYDOWN
                 k = event.key
                 apend = False
@@ -78,6 +91,7 @@ while True:
                 elif k == pygame.K_r:                             #Recarregar arma
                     bullets = 30
                     reloading = True
+                    rSound.play()
                     textNormal = ""
                     textGrande = ""
                     pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
@@ -100,18 +114,19 @@ while True:
                     textNormal = "Low ammo."
                 if bullets > 0:
                     bullets -= 1
+                    fSound.play()
                     pos = pygame.mouse.get_pos()
                     shadowEnemies = lEnemies
                     for bg in shadowEnemies:
                         if bg[1].collidepoint(pos):
                             vida = bg[2]
                             vida -= (24 + random.randint(0,7))
-                            print(vida)
                             if vida <= 0:
                                 lEnemies.remove(bg)
                                 killed += 1
                             bg[2] = vida
                 else:
+                    cSound.play()
                     textNormal = ""
                     textGrande = "RELOAD!"
     else:
@@ -120,6 +135,8 @@ while True:
             if eType == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif eType == pygame.USEREVENT + 4:
+                textGrande = ""
             elif eType == pygame.KEYDOWN:
                 if event.key == 13:
                     difficulty = 1
@@ -129,6 +146,20 @@ while True:
                     textNormal = ""
                     pygame.time.set_timer(pygame.USEREVENT + 2, 5000) #Aumentando a dificuldade
                     pygame.time.set_timer(pygame.USEREVENT + 3, spawnTime) #Spawnar inimigo
+            if textGrande == "":
+                txtsHighscore = []
+                textHigh = "Highscore:"
+                loc = [70, 200]
+                highscore.sort()
+                highscore.reverse()
+                txtsHighscore.append(fontGrande.render(textHigh, True, (220, 220, 0)))
+                for pontuacao in highscore:
+                    txtsHighscore.append(fontGrande.render(str(pontuacao), True, (220, 220, 0)))
+                locatual = 0
+                for txt in txtsHighscore:
+                    screen.blit(txt, [loc[0], (loc[1] + (locatual * 30))])
+                    loc[0] = 180
+                    locatual += 1
     txtNormal = fontNormal.render(textNormal, True, (255,255,255))
     txtGrande = fontGrande.render(textGrande, True, (255,0,0))
     txtScore = fontGrande.render("Score: " + str(killed), True, (220,220,0))
