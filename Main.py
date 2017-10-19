@@ -80,6 +80,7 @@ while True:
                         lEnemies = []
                         tempoJogo = 0
                         textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
+                        pygame.time.set_timer(pygame.USEREVENT + 2, 0)
                         difficulty = 0
             elif eType == pygame.USEREVENT + 5: #Mostrar tempo de jogo
                 tempoJogo += 1
