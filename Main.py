@@ -32,6 +32,7 @@ lbgRects = []
  #Vilões ativos
 lEnemies = []
 #Variaveis controladoras
+morto = False
 keep = [] #Lista com cada tecla que permanece sendo pressionada
 d4Background = random.randint(0,3)
 bullets = 30
@@ -41,6 +42,8 @@ difficulty = 0
 MaxEnemies = 3
 #Passo do jogo
 clock = pygame.time.Clock()
+pygame.time.set_timer(pygame.USEREVENT + 5, 1000) #Mostrando tempo de jogo
+tempoJogo = 0
 spawnTime = 2000
 #Pontuação
 killed = 0
@@ -75,10 +78,12 @@ while True:
                         pygame.time.set_timer(pygame.USEREVENT + 4, 1000)
                         highscore.append(killed)
                         lEnemies = []
+                        tempoJogo = 0
                         textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
                         difficulty = 0
-            
-            elif event.type == pygame.KEYDOWN:  #KEYDOWN
+            elif eType == pygame.USEREVENT + 5: #Mostrar tempo de jogo
+                tempoJogo += 1
+            elif eType == pygame.KEYDOWN:  #KEYDOWN
                 k = event.key
                 apend = False
                 if k == pygame.K_ESCAPE:                          #Sair do jogo
@@ -137,8 +142,10 @@ while True:
                 sys.exit()
             elif eType == pygame.USEREVENT + 4:
                 textGrande = ""
+                morto = True
             elif eType == pygame.KEYDOWN:
                 if event.key == 13:
+                    morto = False
                     difficulty = 1
                     killed = 0
                     bullets = 30
@@ -146,25 +153,27 @@ while True:
                     textNormal = ""
                     pygame.time.set_timer(pygame.USEREVENT + 2, 5000) #Aumentando a dificuldade
                     pygame.time.set_timer(pygame.USEREVENT + 3, spawnTime) #Spawnar inimigo
-            if textGrande == "":
-                txtsHighscore = []
-                textHigh = "Highscore:"
-                loc = [70, 200]
-                highscore.sort()
-                highscore.reverse()
-                txtsHighscore.append(fontGrande.render(textHigh, True, (220, 220, 0)))
-                for pontuacao in highscore:
-                    txtsHighscore.append(fontGrande.render(str(pontuacao), True, (220, 220, 0)))
+        if morto:
+            txtsHighscore = []
+            textHigh = "Highscore:"
+            loc = [70, 200]
+            highscore.sort()
+            highscore.reverse()
+            txtsHighscore.append(fontGrande.render(textHigh, True, (220, 220, 0)))
+            for pontuacao in highscore:
+                txtsHighscore.append(fontGrande.render(str(pontuacao), True, (220, 220, 0)))
                 locatual = 0
-                for txt in txtsHighscore:
-                    screen.blit(txt, [loc[0], (loc[1] + (locatual * 30))])
-                    loc[0] = 180
-                    locatual += 1
+            for txt in txtsHighscore:
+                screen.blit(txt, [loc[0], (loc[1] + (locatual * 30))])
+                loc[0] = 180
+                locatual += 1
     txtNormal = fontNormal.render(textNormal, True, (255,255,255))
     txtGrande = fontGrande.render(textGrande, True, (255,0,0))
     txtScore = fontGrande.render("Score: " + str(killed), True, (220,220,0))
+    txtTempo = fontGrande.render(str(tempoJogo) + "s", True, (255, 255, 255))
     screen.blit(txtNormal, (80, 350))
     screen.blit(txtGrande, (100, 200))
     screen.blit(txtScore, (20, 20))
+    screen.blit(txtTempo, (320, 20))
     clock.tick(8)
     pygame.display.update()
