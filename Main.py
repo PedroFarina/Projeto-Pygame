@@ -48,6 +48,38 @@ spawnTime = 2000
 #Pontuação
 killed = 0
 
+def TrocarBackground():
+    global d4Background
+    d4a = d4Background
+    while d4Background == d4a:
+        d4Background = random.randint(0,3)
+
+def SpawnarInimigo():
+    global spawnTime
+    global lEnemies
+    global MaxEnemies
+    global textGrande
+    global highscore
+    global tempoJogo
+    global textNormal
+    global difficulty
+    spawnTime = max(2000 - (difficulty * 200), 200)
+    if len(lEnemies) < MaxEnemies:
+        d4BadGuys = random.randint(0, min(difficulty, len(lbgImages) - 1))
+        bgImage = lbgImages[d4BadGuys].copy()
+        bgRect = bgImage.get_rect()
+        bgRect.left, bgRect.top = [random.randint(1,150) * 2, random.randint(50,150) * 2]
+        lEnemies.append([bgImage, bgRect,  random.randint(50 + (10 * difficulty), 100 + (10 * difficulty))])
+        if len(lEnemies) > 4:
+            textGrande = "DEFEAT!"
+            pygame.time.set_timer(pygame.USEREVENT + 4, 1000)
+            highscore.append(killed)
+            lEnemies = []
+            tempoJogo = 0
+            textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
+            pygame.time.set_timer(pygame.USEREVENT + 2, 0)
+            difficulty = 0
+
 while True:
     screen.fill([255, 255, 255])
     screen.blit(lImages[d4Background], rectBackground)
@@ -64,24 +96,10 @@ while True:
                 pygame.time.set_timer(pygame.USEREVENT + 1, 0)
             elif eType == pygame.USEREVENT + 2: #Aumentar dificuldade
                 difficulty += 1
-                MaxEnemies = 3 * difficulty
+                MaxEnemies = 2 * difficulty
+                TrocarBackground()
             elif eType == pygame.USEREVENT + 3: #Spawnar inimigo
-                spawnTime = max(2000 - (difficulty * 200), 200)
-                if len(lEnemies) < MaxEnemies:
-                    d4BadGuys = random.randint(0, min(difficulty, len(lbgImages) - 1))
-                    bgImage = lbgImages[d4BadGuys].copy()
-                    bgRect = bgImage.get_rect()
-                    bgRect.left, bgRect.top = [random.randint(1,150) * 2, random.randint(50,150) * 2]
-                    lEnemies.append([bgImage, bgRect,  random.randint(50 + (10 * difficulty), 100 + (10 * difficulty))])
-                    if len(lEnemies) > 4:
-                        textGrande = "DEFEAT!"
-                        pygame.time.set_timer(pygame.USEREVENT + 4, 1000)
-                        highscore.append(killed)
-                        lEnemies = []
-                        tempoJogo = 0
-                        textNormal = "PRESSIONE [ENTER] PARA TENTAR NOVAMENTE"
-                        pygame.time.set_timer(pygame.USEREVENT + 2, 0)
-                        difficulty = 0
+                SpawnarInimigo()
             elif eType == pygame.USEREVENT + 5: #Mostrar tempo de jogo
                 tempoJogo += 1
             elif eType == pygame.KEYDOWN:  #KEYDOWN
@@ -91,9 +109,7 @@ while True:
                     pygame.quit()
                     sys.exit()
                 elif k == pygame.K_LEFT or k == pygame.K_RIGHT:   #Mudar de cenário
-                    d4a = d4Background
-                    while d4Background == d4a:
-                        d4Background = random.randint(0,3)
+                    TrocarBackground()
                 elif k == pygame.K_r:                             #Recarregar arma
                     bullets = 30
                     reloading = True
